@@ -34,7 +34,7 @@ The app crops objects of selected classes in images project and creates a new pr
 
 <img src="https://i.imgur.com/cgaP76g.png" width="100%"/>
 
-3. Once app is started, new task appear in workspace tasks. Monitor progress from both "Tasks" list and from application page. To open report in a new tab click "Open" button.
+3. Once app is started, it will appear in workspace tasks, to open the app click `Open` button
  
 <div align="center" markdown>
 <img src="https://i.imgur.com/8DemHS7.png"/>
