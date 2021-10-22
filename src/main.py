@@ -13,21 +13,30 @@ def preview(api: sly.Api, task_id, context, state, app_logger):
 
     image_id = random.choice(g.image_ids)
     image_info = api.image.get_info_by_id(image_id)
+    image_name = image_info.name
 
     img = api.image.download_np(image_info.id)
     ann_json = api.annotation.download(image_id).annotation
     ann = sly.Annotation.from_json(ann_json, g.project_meta)
 
-    crops = f.crop_and_resize_objects([img], [ann], state)
-    crops = [(img, ann)] + crops
+    selected_classes = f.get_selected_classes_from_ui(state["classesSelected"])
+    single_crop = f.crop_and_resize_objects([img], [ann], state, selected_classes, [image_name])
+    single_crop = f.unpack_single_crop(single_crop, image_name)
+    single_crop = [(img, ann)] + single_crop
 
     grid_data = {}
     grid_layout = [[] for i in range(g.CNT_GRID_COLUMNS)]
 
-    upload_results = f.upload_augs(crops)
+    upload_results = f.upload_augs(single_crop)
     for idx, info in enumerate(upload_results):
-        grid_data[info.name] = {"url": info.full_storage_url,
-                                "figures": [label.to_json() for label in crops[idx][1].labels]}
+        if idx == 0:
+            grid_data[info.name] = {"url": info.full_storage_url,
+                                    "title": f"Original image ({image_name})",
+                                    "figures": [label.to_json() for label in single_crop[idx][1].labels]}
+        else:
+            grid_data[info.name] = {"url": info.full_storage_url,
+                                    "title": f"Object_{idx}",
+                                    "figures": [label.to_json() for label in single_crop[idx][1].labels]}
         grid_layout[idx % g.CNT_GRID_COLUMNS].append(info.name)
 
     if len(grid_data) > 0:
@@ -42,44 +51,63 @@ def preview(api: sly.Api, task_id, context, state, app_logger):
 @g.my_app.callback("crop_all_objects")
 @sly.timeit
 def crop_all_objects(api: sly.Api, task_id, context, state, app_logger):
+    api.task.set_field(task_id, "data.started", True)
     dst_project = api.project.create(g.WORKSPACE_ID, state["resultProjectName"], type=sly.ProjectType.IMAGES,
                                      change_name_if_conflict=True)
-    api.project.update_meta(dst_project.id, g.project_meta.to_json())
-    datasets = api.dataset.get_list(g.PROJECT_ID)
+    if state["keepAnns"]:
+        api.project.update_meta(dst_project.id, g.project_meta.to_json())
 
+    progress = sly.Progress("Cropping objects on images", g.total_images_count)
+    current_progress = 0
+    datasets = api.dataset.get_list(g.PROJECT_ID)
     for dataset in datasets:
         dst_dataset = api.dataset.create(dst_project.id, dataset.name)
         images_infos = api.image.get_list(dataset.id)
         for batch in sly.batched(images_infos):
             image_ids = [image_info.id for image_info in images_infos]
+            image_names = [image_info.name for image_info in images_infos]
             ann_infos = api.annotation.download_batch(dataset.id, image_ids)
 
             image_nps = api.image.download_nps(dataset.id, image_ids)
             anns = [sly.Annotation.from_json(ann_info.annotation, g.project_meta) for ann_info in ann_infos]
-            crops = f.crop_and_resize_objects(image_nps, anns, state)
-            crop_nps, crop_anns = f.unpack_crops(crops)
-            crop_names = f.get_names_from_crop_anns(crop_anns)
+            selected_classes = f.get_selected_classes_from_ui(state["classesSelected"])
+            crops = f.crop_and_resize_objects(image_nps, anns, state, selected_classes, image_names)
+            crop_nps, crop_anns, crop_names = f.unpack_crops(crops, image_names)
 
             dst_image_infos = api.image.upload_nps(dst_dataset.id, crop_names, crop_nps)
             dst_image_ids = [dst_image_info.id for dst_image_info in dst_image_infos]
-            api.annotation.upload_anns(dst_image_ids, crop_anns)
+            if state["keepAnns"]:
+                api.annotation.upload_anns(dst_image_ids, crop_anns)
+            progress.iters_done_report(len(batch))
+            current_progress += len(batch)
+            api.task.set_field(task_id, "data.progress", int(current_progress * 100 / g.total_images_count))
 
-
-
-
+    res_project = api.project.get_info_by_id(dst_project.id)
+    fields = [
+        {"field": "data.resultProject", "payload": res_project.name},
+        {"field": "data.resultProjectId", "payload": res_project.id},
+        {"field": "data.resultProjectPreviewUrl",
+         "payload": api.image.preview_url(res_project.reference_image_url, 100, 100)},
+        {"field": "data.finished", "payload": True}
+    ]
+    api.task.set_fields(task_id, fields)
+    api.task.set_output_project(task_id, res_project.id, res_project.name)
+    g.my_app.stop()
 
 
 def main():
     data = {}
     state = {}
 
+    init_ui.validate_input_meta(g.project_meta)
     init_ui.init(data, state)
 
     initial_events = [
         {
             "state": state,
             "context": None,
-            "command": "preview",
+            "command": "preview"
+            #"command": "preview"
         }
     ]
 

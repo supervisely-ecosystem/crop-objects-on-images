@@ -12,9 +12,13 @@ def validate_input_meta(meta: sly.ProjectMeta):
             classes_with_unsupported_shape.append((obj_class.name, obj_class.geometry_type.geometry_name()))
 
     if len(classes_with_unsupported_shape) > 0:
-        raise TypeError('Unsupported shapes: {}. App supports only {}. '
-                        'Use another apps to transform class shapes or rasterize objects. Learn more in app readme.'
-                        .format(classes_with_unsupported_shape, sly.Bitmap.geometry_name()))
+        raise TypeError(f'Unsupported shapes: {classes_with_unsupported_shape}. '
+                        f'App supports only {sly.Bitmap.geometry_name()}, \
+                        {sly.Rectangle.geometry_name()}, \
+                        {sly.Polygon.geometry_name()}, \
+                        {sly.Polyline.geometry_name()}, \
+                        {sly.AnyGeometry.geometry_name()}. '
+                        'Use another apps to transform class shapes or rasterize objects. Learn more in app readme.')
 
 
 def prepare_ui_classes(project_meta):

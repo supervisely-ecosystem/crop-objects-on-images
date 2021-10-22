@@ -1,6 +1,7 @@
 import os
 import globals as g
 import supervisely_lib as sly
+from supervisely_lib.io.fs import get_file_name
 
 
 def resize_crop(img, ann, out_size):
@@ -9,19 +10,30 @@ def resize_crop(img, ann, out_size):
     return img, ann
 
 
-def crop_and_resize_objects(img_nps, anns, app_state):
-    crops = []
-    for img_np, ann in zip(img_nps, anns):
-        if len(ann.labels) == 0:
-            continue
+def unpack_single_crop(crop, image_name):
+    crop = crop[0][image_name]
 
-        selected_classes = ["kiwi", "lemon"]
-        crop_padding = {
-            "top": "{}%".format(app_state["cropPadding"]),
-            "left": "{}%".format(app_state["cropPadding"]),
-            "right": "{}%".format(app_state["cropPadding"]),
-            "bottom": "{}%".format(app_state["cropPadding"])
-        }
+    flat_crops = []
+    for sublist in crop:
+        for crop in sublist:
+            flat_crops.append(crop)
+
+    return flat_crops
+
+
+def crop_and_resize_objects(img_nps, anns, app_state, selected_classes, original_names):
+    crops = []
+    crop_padding = {
+        "top": "{}%".format(app_state["cropPadding"]),
+        "left": "{}%".format(app_state["cropPadding"]),
+        "right": "{}%".format(app_state["cropPadding"]),
+        "bottom": "{}%".format(app_state["cropPadding"])
+    }
+    for img_np, ann, original_name in zip(img_nps, anns, original_names):
+        img_dict = {original_name: []}
+        if len(ann.labels) == 0:
+            crops.append(img_dict)
+            continue
 
         for class_name in selected_classes:
             objects_crop = sly.aug.instance_crop(img_np, ann, class_name, False, crop_padding)
@@ -29,37 +41,39 @@ def crop_and_resize_objects(img_nps, anns, app_state):
                 resized_crop = []
                 for crop_img, crop_ann in objects_crop:
                     crop_img, crop_ann = resize_crop(crop_img, crop_ann, (app_state["inputHeight"], app_state["inputWidth"]))
-
                     resized_crop.append((crop_img, crop_ann))
-                crops.append(resized_crop)
+                img_dict[original_name].append(resized_crop)
             else:
-                crops.append(objects_crop)
+                img_dict[original_name].append(objects_crop)
 
-    flat_crops = []
-    for sublist in crops:
-        for crop in sublist:
-            flat_crops.append(crop)
-
-    return flat_crops
+        crops.append(img_dict)
+    return crops
 
 
-def unpack_crops(crops):
+def unpack_crops(crops, original_names):
     img_nps = []
     anns = []
-    for img_np, ann in crops:
-        img_nps.append(img_np)
-        anns.append(ann)
-    return img_nps, anns
-
-
-def get_names_from_crop_anns(crop_anns):
-    crop_names = []
+    img_names = []
     name_idx = 0
-    for ann in crop_anns:
-        for label in ann.labels:
-            name_idx += 1
-            crop_names.append(f"{label.obj_class.name}_{name_idx}.png")
-    return crop_names
+    for crop, original_name in zip(crops, original_names):
+        for label_crop in crop[original_name]:
+            for img_np, ann in label_crop:
+                img_nps.append(img_np)
+                anns.append(ann)
+                for label in ann.labels:
+                    name_idx += 1
+                    img_names.append(f"{get_file_name(original_name)}_{label.obj_class.name}_{name_idx}_{label.obj_class.sly_id}.png")
+
+    return img_nps, anns, img_names
+
+
+def get_selected_classes_from_ui(selected_classes):
+    selected_classses = []
+    ui_classes = g.api.task.get_field(g.TASK_ID, "data.classes")
+    for obj_class, is_selected in zip(ui_classes, selected_classes):
+        if is_selected:
+            selected_classses.append(obj_class["name"])
+    return selected_classses
 
 
 @sly.timeit

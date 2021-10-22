@@ -35,7 +35,7 @@
                 <div v-for="(item,index) in data.classes" :key="index">
                     <el-checkbox class="mt5"
                                  v-model="state.classesSelected[index]"
-                                 :disabled="state.classesDisabled[index]">
+                                 :disabled="state.classesDisabled[index] || data.finished === true">
                         <i class="zmdi zmdi-circle mr5 ml5" :style="{color: item.color}"></i>{{item.title}}
                         <span style="color: #5a6772;" class="ml15"><i
                                 class="zmdi zmdi-shape mr5"></i>{{item.shape}}</span>
@@ -52,7 +52,7 @@
                 </sly-field>
 
                 <div class="fflex align-start">
-                    <el-checkbox v-model="state.keepAnns" class="mt10 mr10"></el-checkbox>
+                    <el-checkbox v-model="state.keepAnns" :disabled="data.finished === true" class="mt10 mr10"></el-checkbox>
                     <sly-field class="mt20" title="Save annotations"
                                description="Transfer annotations from source project to resulting project">
                     </sly-field>
@@ -65,12 +65,13 @@
                         <el-input-number :disabled="data.finished === true"
                                          v-model="state.cropPadding" :min="2" :max="50"
                                          size="small" :controls="true"></el-input-number>
+                        <b class="ml5">%</b>
                     </div>
                 </sly-field>
 
 
                 <div style="border-bottom: 1px solid #e3e6ec; margin: 10px 0"></div>
-                <sly-field title="Crop size"
+                <sly-field title="Resize crop"
                            description="All cropped objects images will be resized to input resolution">
                     <div class="fflex">
                         <div style="margin-right: 3px">W x H :</div>
@@ -84,7 +85,7 @@
                         <el-checkbox class="ml10"
                                      :disabled="data.finished === true"
                                      v-model="state.autoSize"
-                                     label="Auto-size">
+                                     label="Original size">
                         </el-checkbox>
                     </div>
                 </sly-field>
@@ -107,7 +108,11 @@
                     </el-button>
                 </div>
                 <sly-grid-gallery v-if="data.previewProgress === 100" :content="data.preview.content"
-                                  :options="data.preview.options"/>
+                                  :options="data.preview.options">
+                    <template v-slot:card-footer="{ annotation }">
+                        <h3>{{annotation.title}}</h3>
+                    </template>
+                </sly-grid-gallery>
                 <el-progress v-if="data.previewProgress !== 100" :percentage="data.previewProgress"></el-progress>
             </sly-card>
         </el-col>
