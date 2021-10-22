@@ -37,10 +37,10 @@ Application key points:
 
 <img src="https://i.imgur.com/cgaP76g.png" width="100%"/>
 
-3. Check the box if you need only annotated video frames, select datasets and press the `Run` button.
+3. Once app is started, new task appear in workspace tasks. Monitor progress from both "Tasks" list and from application page. To open report in a new tab click "Open" button.
  
 <div align="center" markdown>
-<img src="https://i.imgur.com/vej5rqM.png" width="500"/>
+<img src="https://i.imgur.com/8DemHS7.png"/>
 </div>
 
 # How To Use
