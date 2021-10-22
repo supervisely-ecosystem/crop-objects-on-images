@@ -24,9 +24,6 @@
 
 The app crops objects of selected classes in images project and creates a new project. User can define some crop settings - for example, padding, resize and what to do with original labels - keep or ignore. 
 
-Application key points:  
-- App works only with the following geometry types: `Bitmap`, `Polygon`, `Rectangle`, `Polyline` (Use another apps to transform class shapes or rasterize objects)
-
 # How To Run 
 
 1. Add [Crop objects on images](https://ecosystem.supervise.ly/apps/crop-objects-on-image) to your team from Ecosystem.
