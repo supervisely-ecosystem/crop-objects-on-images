@@ -5,14 +5,15 @@
     "Transforms",
     "Images"
   ],
-  "description": "Crops selected objects in Project with the given parameters",
+  "description": "Creates new project with cropped objects",
   "docker_image": "supervisely/base-py-sdk:6.1.101",
   "main_script": "src/main.py",
   "gui_template": "src/gui.html",
   "task_location": "workspace_tasks",
-  "icon": "blank",
+  "icon": "https://img.icons8.com/color/100/000000/crop--v1.png",
   "icon_background": "#FFFFFF",
   "context_menu": {
-    "target": ["images_project"]
+    "target": ["images_project"],
+    "context_category": "Transform"
   }
 }
