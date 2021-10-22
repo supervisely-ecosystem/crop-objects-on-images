@@ -31,7 +31,7 @@ Application key points:
 
 1. Add [Crop objects on images](https://ecosystem.supervise.ly/apps/crop-objects-on-image) to your team from Ecosystem.
 
-<img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/crop-objects-on-image" src="https://i.imgur.com/9gUzdYM.png" width="350px" style='padding-bottom: 20px'/>  
+<img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/crop-objects-on-image" src="https://i.imgur.com/wZiMUWn.png" width="350px" style='padding-bottom: 20px'/>  
 
 2. Run app from the context menu of **Images Project**:
 
@@ -53,11 +53,3 @@ Application key points:
 <div align="center" markdown>
 <img src="https://i.imgur.com/r2E6LTe.png"/>
 </div>
-
-# Results
-
-After running the application, you will be redirected to the `Tasks` page.  
-Once application processing has finished, your project will be available.  
-Click on the `project name` to proceed to it.
-
-<img src="https://i.imgur.com/ADEnjJd.png"/>
