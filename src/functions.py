@@ -1,4 +1,3 @@
-import os
 import globals as g
 import supervisely_lib as sly
 from supervisely_lib.io.fs import get_file_name
@@ -12,7 +11,6 @@ def resize_crop(img, ann, out_size):
 
 def unpack_single_crop(crop, image_name):
     crop = crop[0][image_name]
-
     flat_crops = []
     for sublist in crop:
         for crop in sublist:
@@ -77,7 +75,7 @@ def get_selected_classes_from_ui(selected_classes):
 
 
 @sly.timeit
-def upload_augs(crops):
+def upload_preview(crops):
     if len(crops) == 0:
         g.api.task.set_fields(g.TASK_ID, [{"field": "data.showEmptyMessage", "payload": True}])
         return

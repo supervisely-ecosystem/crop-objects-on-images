@@ -12,12 +12,8 @@ def validate_input_meta(meta: sly.ProjectMeta):
             classes_with_unsupported_shape.append((obj_class.name, obj_class.geometry_type.geometry_name()))
 
     if len(classes_with_unsupported_shape) > 0:
-        raise TypeError(f'Unsupported shapes: {classes_with_unsupported_shape}. '
-                        f'App supports only {sly.Bitmap.geometry_name()}, \
-                        {sly.Rectangle.geometry_name()}, \
-                        {sly.Polygon.geometry_name()}, \
-                        {sly.Polyline.geometry_name()}, \
-                        {sly.AnyGeometry.geometry_name()}. '
+        sly.logger.warn(f'Unsupported shapes: {classes_with_unsupported_shape}. '
+                        f'App supports only {sly.Bitmap.geometry_name()}, {sly.Rectangle.geometry_name()}, {sly.Polygon.geometry_name()}, {sly.Polyline.geometry_name()}, {sly.AnyGeometry.geometry_name()}. '
                         'Use another apps to transform class shapes or rasterize objects. Learn more in app readme.')
 
 
@@ -25,6 +21,8 @@ def prepare_ui_classes(project_meta):
     ui_classes = []
     classes_selected = []
     for obj_class in project_meta.obj_classes:
+        if obj_class.geometry_type == sly.Point or obj_class.geometry_type == sly.PointLocation or obj_class.geometry_type == sly.Cuboid:
+            continue
         obj_class: sly.ObjClass
         ui_classes.append(obj_class.to_json())
         classes_selected.append(True)

@@ -10,7 +10,6 @@ import supervisely_lib as sly
 @sly.timeit
 def preview(api: sly.Api, task_id, context, state, app_logger):
     api.task.set_fields(task_id, [{"field": "data.previewProgress", "payload": 0}])
-
     image_id = random.choice(g.image_ids)
     image_info = api.image.get_info_by_id(image_id)
     image_name = image_info.name
@@ -20,6 +19,7 @@ def preview(api: sly.Api, task_id, context, state, app_logger):
     ann = sly.Annotation.from_json(ann_json, g.project_meta)
 
     selected_classes = f.get_selected_classes_from_ui(state["classesSelected"])
+
     single_crop = f.crop_and_resize_objects([img], [ann], state, selected_classes, [image_name])
     single_crop = f.unpack_single_crop(single_crop, image_name)
     single_crop = [(img, ann)] + single_crop
@@ -27,7 +27,7 @@ def preview(api: sly.Api, task_id, context, state, app_logger):
     grid_data = {}
     grid_layout = [[] for i in range(g.CNT_GRID_COLUMNS)]
 
-    upload_results = f.upload_augs(single_crop)
+    upload_results = f.upload_preview(single_crop)
     for idx, info in enumerate(upload_results):
         if idx == 0:
             grid_data[info.name] = {"url": info.full_storage_url,
