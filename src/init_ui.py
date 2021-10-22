@@ -45,7 +45,7 @@ def init(data, state):
     data["showEmptyMessage"] = False
     data["finished"] = False
 
-    state["cropPadding"] = 2
+    state["cropPadding"] = 0
     state["keepAnns"] = True
     state["classesSelected"] = classes_selected
     state["classesDisabled"] = classes_disabled
