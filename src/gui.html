@@ -64,7 +64,7 @@
                                         (width of height of bounding box)">
                     <div class="fflex">
                         <el-input-number :disabled="data.finished === true"
-                                         v-model="state.cropPadding" :min="2" :max="50"
+                                         v-model="state.cropPadding" :min="0" :max="50"
                                          size="small" :controls="true"></el-input-number>
                         <b class="ml5">%</b>
                     </div>
