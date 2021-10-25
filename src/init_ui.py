@@ -44,6 +44,7 @@ def init(data, state):
     data["previewProgress"] = 0
     data["showEmptyMessage"] = False
     data["finished"] = False
+    data["validImage"] = True
 
     state["cropPadding"] = 0
     state["keepAnns"] = True

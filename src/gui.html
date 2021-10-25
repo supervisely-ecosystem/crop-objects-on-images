@@ -18,7 +18,7 @@
                 </sly-field>
                 <el-progress v-if="data.started === true && data.progress !== 100"
                              :percentage="data.progress"></el-progress>
-                <el-button :disabled="data.finished === true" type="primary"
+                <el-button :disabled="data.finished === true || state.classesSelected.every(v => v === false)" type="primary"
                            @click="command('crop_all_objects')" v-if="data.started === false">
                     <i class="zmdi zmdi-play" style="margin-right: 5px"></i> Crop all objects
                 </el-button>
@@ -64,7 +64,7 @@
                                         (width of height of bounding box)">
                     <div class="fflex">
                         <el-input-number :disabled="data.finished === true"
-                                         v-model="state.cropPadding" :min="2" :max="50"
+                                         v-model="state.cropPadding" :min="0" :max="50"
                                          size="small" :controls="true"></el-input-number>
                         <b class="ml5">%</b>
                     </div>
@@ -99,21 +99,22 @@
 
 
         <el-col :span="16" style="flex: 1">
-            <sly-card :disabled="data.finished === true" title="Preview on random image"
-                      subtitle="Preview cropped objects from random original image from project"
+            <sly-card :disabled="data.finished === true" title="Preview on random image with selected classes"
+                      subtitle="Preview crops of selected objects from random original image from project"
                       style="margin-top: 10px">
                 <div slot="header">
-                    <el-button :disabled="data.finished === true"
+                    <el-button :disabled="data.finished === true || state.classesSelected.every(v => v === false)"
                                type="primary" @click="command('preview'); state.showEmptyMessage=false">
                         <i class="zmdi zmdi-grid" style="margin-right: 5px"></i> Preview
                     </el-button>
                 </div>
-                <sly-grid-gallery v-if="data.previewProgress === 100" :content="data.preview.content"
+                <sly-grid-gallery v-if="data.previewProgress === 100 && data.validImage" :content="data.preview.content"
                                   :options="data.preview.options">
                     <template v-slot:card-footer="{ annotation }">
                         <h3>{{annotation.title}}</h3>
                     </template>
                 </sly-grid-gallery>
+                <div v-if="data.previewProgress === 100 && !data.validImage"> <font color="red">No image with selected class(es) found in Project</font></div>
                 <el-progress v-if="data.previewProgress !== 100" :percentage="data.previewProgress"></el-progress>
             </sly-card>
         </el-col>

@@ -8,17 +8,32 @@ import supervisely_lib as sly
 @g.my_app.callback("preview")
 @sly.timeit
 def preview(api: sly.Api, task_id, context, state, app_logger):
-    api.task.set_fields(task_id, [{"field": "data.previewProgress", "payload": 0}])
+    api.task.set_fields(task_id, [{"field": "data.previewProgress", "payload": 0},
+                                  {"field": "data.validImage", "payload": True}])
 
-    image_id = random.choice(g.image_ids)
-    image_info = api.image.get_info_by_id(image_id)
-    image_name = image_info.name
+    image_counter = 0
+    has_selected_class = False
+    while has_selected_class is False:
+        image_counter += 1
 
-    img = api.image.download_np(image_info.id)
-    ann_json = api.annotation.download(image_id).annotation
-    ann = sly.Annotation.from_json(ann_json, g.project_meta)
+        if image_counter > g.total_images_count:
+            sly.logger.warn(f"No image with selected class(es) found in Project")
+            api.task.set_fields(task_id, [{"field": "data.validImage", "payload": False}])
+            break
 
-    selected_classes = f.get_selected_classes_from_ui(state["classesSelected"])
+        image_id = random.choice(g.image_ids)
+        image_info = api.image.get_info_by_id(image_id)
+        image_name = image_info.name
+
+        img = api.image.download_np(image_info.id)
+        ann_json = api.annotation.download(image_id).annotation
+        ann = sly.Annotation.from_json(ann_json, g.project_meta)
+
+        selected_classes = f.get_selected_classes_from_ui(state["classesSelected"])
+        for label in ann.labels:
+            if label.obj_class.name in selected_classes:
+                has_selected_class = True
+
     single_crop = f.crop_and_resize_objects([img], [ann], state, selected_classes, [image_name])
     single_crop = f.unpack_single_crop(single_crop, image_name)
     single_crop = [(img, ann)] + single_crop
@@ -70,6 +85,7 @@ def crop_all_objects(api: sly.Api, task_id, context, state, app_logger):
             image_nps = api.image.download_nps(dataset.id, image_ids)
             anns = [sly.Annotation.from_json(ann_info.annotation, g.project_meta) for ann_info in ann_infos]
             selected_classes = f.get_selected_classes_from_ui(state["classesSelected"])
+
             crops = f.crop_and_resize_objects(image_nps, anns, state, selected_classes, image_names)
             crop_nps, crop_anns, crop_names = f.unpack_crops(crops, image_names)
 
