@@ -66,12 +66,12 @@ def unpack_crops(crops, original_names):
 
 
 def get_selected_classes_from_ui(selected_classes):
-    selected_classses = []
+    classes = []
     ui_classes = g.api.task.get_field(g.TASK_ID, "data.classes")
     for obj_class, is_selected in zip(ui_classes, selected_classes):
         if is_selected:
-            selected_classses.append(obj_class["name"])
-    return selected_classses
+            classes.append(obj_class["name"])
+    return classes
 
 
 @sly.timeit
