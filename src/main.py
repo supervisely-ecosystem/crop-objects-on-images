@@ -1,8 +1,12 @@
 import random
+
+import psutil
+
 import init_ui
 import globals as g
 import functions as f
 import supervisely_lib as sly
+
 
 
 @g.my_app.callback("preview")
@@ -28,15 +32,19 @@ def preview(api: sly.Api, task_id, context, state, app_logger):
 
     upload_results = f.upload_preview(single_crop)
     for idx, info in enumerate(upload_results):
+        if idx > 8:
+            break
+
         if idx == 0:
-            grid_data[info.name] = {"url": info.full_storage_url,
+            grid_data[idx] = {"url": info.full_storage_url,
                                     "title": f"Original image ({image_name})",
                                     "figures": [label.to_json() for label in single_crop[idx][1].labels]}
         else:
-            grid_data[info.name] = {"url": info.full_storage_url,
+            grid_data[idx] = {"url": info.full_storage_url,
                                     "title": f"Object_{idx}",
                                     "figures": [label.to_json() for label in single_crop[idx][1].labels]}
-        grid_layout[idx % g.CNT_GRID_COLUMNS].append(info.name)
+        grid_layout[idx % g.CNT_GRID_COLUMNS].append(idx)
+
 
     if len(grid_data) > 0:
         content = {
@@ -45,6 +53,8 @@ def preview(api: sly.Api, task_id, context, state, app_logger):
             "layout": grid_layout
         }
         api.task.set_fields(task_id, [{"field": "data.preview.content", "payload": content}])
+
+    # print(f'{psutil.virtual_memory().percent=}')
 
 
 @g.my_app.callback("crop_all_objects")
@@ -63,8 +73,8 @@ def crop_all_objects(api: sly.Api, task_id, context, state, app_logger):
         dst_dataset = api.dataset.create(dst_project.id, dataset.name)
         images_infos = api.image.get_list(dataset.id)
         for batch in sly.batched(images_infos):
-            image_ids = [image_info.id for image_info in images_infos]
-            image_names = [image_info.name for image_info in images_infos]
+            image_ids = [image_info.id for image_info in batch]
+            image_names = [image_info.name for image_info in batch]
             ann_infos = api.annotation.download_batch(dataset.id, image_ids)
 
             image_nps = api.image.download_nps(dataset.id, image_ids)
@@ -80,6 +90,8 @@ def crop_all_objects(api: sly.Api, task_id, context, state, app_logger):
             progress.iters_done_report(len(batch))
             current_progress += len(batch)
             api.task.set_field(task_id, "data.progress", int(current_progress * 100 / g.total_images_count))
+
+            # print(f'{psutil.virtual_memory().percent=}')
 
     res_project = api.project.get_info_by_id(dst_project.id)
     fields = [
@@ -101,16 +113,16 @@ def main():
     init_ui.validate_input_meta(g.project_meta)
     init_ui.init(data, state)
 
-    initial_events = [
-        {
-            "state": state,
-            "context": None,
-            "command": "preview"
-        }
-    ]
+    # initial_events = [
+    #     {
+    #         "state": state,
+    #         "context": None,
+    #         "command": "preview"
+    #     }
+    # ]
 
     # Run application service
-    g.my_app.run(data=data, state=state, initial_events=initial_events)
+    g.my_app.run(data=data, state=state)
 
 
 if __name__ == "__main__":
