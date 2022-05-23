@@ -1,12 +1,10 @@
 import random
 
-import psutil
+import supervisely as sly
 
-import init_ui
-import globals as g
 import functions as f
-import supervisely_lib as sly
-
+import globals as g
+import init_ui
 
 
 @g.my_app.callback("preview")
@@ -23,12 +21,14 @@ def preview(api: sly.Api, task_id, context, state, app_logger):
     ann = sly.Annotation.from_json(ann_json, g.project_meta)
 
     selected_classes = f.get_selected_classes_from_ui(state["classesSelected"])
-    single_crop = f.crop_and_resize_objects([img], [ann], state, selected_classes, [image_name])
+    single_crop = f.crop_and_resize_objects(
+        [img], [ann], state, selected_classes, [image_name]
+    )
     single_crop = f.unpack_single_crop(single_crop, image_name)
     single_crop = [(img, ann)] + single_crop
 
     grid_data = {}
-    grid_layout = [[] for i in range(g.CNT_GRID_COLUMNS)]
+    grid_layout = [[] for _ in range(g.CNT_GRID_COLUMNS)]
 
     upload_results = f.upload_preview(single_crop)
     for idx, info in enumerate(upload_results):
@@ -36,23 +36,28 @@ def preview(api: sly.Api, task_id, context, state, app_logger):
             break
 
         if idx == 0:
-            grid_data[idx] = {"url": info.full_storage_url,
-                                    "title": f"Original image ({image_name})",
-                                    "figures": [label.to_json() for label in single_crop[idx][1].labels]}
+            grid_data[idx] = {
+                "url": info.full_storage_url,
+                "title": f"Original image ({image_name})",
+                "figures": [label.to_json() for label in single_crop[idx][1].labels],
+            }
         else:
-            grid_data[idx] = {"url": info.full_storage_url,
-                                    "title": f"Object_{idx}",
-                                    "figures": [label.to_json() for label in single_crop[idx][1].labels]}
+            grid_data[idx] = {
+                "url": info.full_storage_url,
+                "title": f"Object_{idx}",
+                "figures": [label.to_json() for label in single_crop[idx][1].labels],
+            }
         grid_layout[idx % g.CNT_GRID_COLUMNS].append(idx)
 
-
-    if len(grid_data) > 0:
+    if grid_data:
         content = {
             "projectMeta": g.project_meta_json,
             "annotations": grid_data,
-            "layout": grid_layout
+            "layout": grid_layout,
         }
-        api.task.set_fields(task_id, [{"field": "data.preview.content", "payload": content}])
+        api.task.set_fields(
+            task_id, [{"field": "data.preview.content", "payload": content}]
+        )
 
     # print(f'{psutil.virtual_memory().percent=}')
 
@@ -61,8 +66,12 @@ def preview(api: sly.Api, task_id, context, state, app_logger):
 @sly.timeit
 def crop_all_objects(api: sly.Api, task_id, context, state, app_logger):
     api.task.set_field(task_id, "data.started", True)
-    dst_project = api.project.create(g.WORKSPACE_ID, state["resultProjectName"], type=sly.ProjectType.IMAGES,
-                                     change_name_if_conflict=True)
+    dst_project = api.project.create(
+        g.WORKSPACE_ID,
+        state["resultProjectName"],
+        type=sly.ProjectType.IMAGES,
+        change_name_if_conflict=True,
+    )
     if state["keepAnns"]:
         api.project.update_meta(dst_project.id, g.project_meta.to_json())
 
@@ -78,18 +87,29 @@ def crop_all_objects(api: sly.Api, task_id, context, state, app_logger):
             ann_infos = api.annotation.download_batch(dataset.id, image_ids)
 
             image_nps = api.image.download_nps(dataset.id, image_ids)
-            anns = [sly.Annotation.from_json(ann_info.annotation, g.project_meta) for ann_info in ann_infos]
+            anns = [
+                sly.Annotation.from_json(ann_info.annotation, g.project_meta)
+                for ann_info in ann_infos
+            ]
             selected_classes = f.get_selected_classes_from_ui(state["classesSelected"])
-            crops = f.crop_and_resize_objects(image_nps, anns, state, selected_classes, image_names)
+            crops = f.crop_and_resize_objects(
+                image_nps, anns, state, selected_classes, image_names
+            )
             crop_nps, crop_anns, crop_names = f.unpack_crops(crops, image_names)
 
             dst_image_infos = api.image.upload_nps(dst_dataset.id, crop_names, crop_nps)
             dst_image_ids = [dst_image_info.id for dst_image_info in dst_image_infos]
             if state["keepAnns"]:
+                if state["copyTags"]:
+                    crop_anns = f.copy_tags(crop_anns)
                 api.annotation.upload_anns(dst_image_ids, crop_anns)
             progress.iters_done_report(len(batch))
             current_progress += len(batch)
-            api.task.set_field(task_id, "data.progress", int(current_progress * 100 / g.total_images_count))
+            api.task.set_field(
+                task_id,
+                "data.progress",
+                int(current_progress * 100 / g.total_images_count),
+            )
 
             # print(f'{psutil.virtual_memory().percent=}')
 
@@ -97,9 +117,11 @@ def crop_all_objects(api: sly.Api, task_id, context, state, app_logger):
     fields = [
         {"field": "data.resultProject", "payload": res_project.name},
         {"field": "data.resultProjectId", "payload": res_project.id},
-        {"field": "data.resultProjectPreviewUrl",
-         "payload": api.image.preview_url(res_project.reference_image_url, 100, 100)},
-        {"field": "data.finished", "payload": True}
+        {
+            "field": "data.resultProjectPreviewUrl",
+            "payload": api.image.preview_url(res_project.reference_image_url, 100, 100),
+        },
+        {"field": "data.finished", "payload": True},
     ]
     api.task.set_fields(task_id, fields)
     api.task.set_output_project(task_id, res_project.id, res_project.name)

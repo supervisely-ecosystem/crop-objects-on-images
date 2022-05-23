@@ -1,6 +1,7 @@
+import supervisely as sly
+from supervisely.io.fs import get_file_name
+
 import globals as g
-import supervisely_lib as sly
-from supervisely_lib.io.fs import get_file_name
 
 
 def resize_crop(img, ann, out_size):
@@ -25,7 +26,7 @@ def crop_and_resize_objects(img_nps, anns, app_state, selected_classes, original
         "top": "{}%".format(app_state["cropPadding"]),
         "left": "{}%".format(app_state["cropPadding"]),
         "right": "{}%".format(app_state["cropPadding"]),
-        "bottom": "{}%".format(app_state["cropPadding"])
+        "bottom": "{}%".format(app_state["cropPadding"]),
     }
     for img_np, ann, original_name in zip(img_nps, anns, original_names):
         img_dict = {original_name: []}
@@ -34,11 +35,17 @@ def crop_and_resize_objects(img_nps, anns, app_state, selected_classes, original
             continue
 
         for class_name in selected_classes:
-            objects_crop = sly.aug.instance_crop(img_np, ann, class_name, False, crop_padding)
+            objects_crop = sly.aug.instance_crop(
+                img_np, ann, class_name, False, crop_padding
+            )
             if app_state["autoSize"] is False:
                 resized_crop = []
                 for crop_img, crop_ann in objects_crop:
-                    crop_img, crop_ann = resize_crop(crop_img, crop_ann, (app_state["inputHeight"], app_state["inputWidth"]))
+                    crop_img, crop_ann = resize_crop(
+                        crop_img,
+                        crop_ann,
+                        (app_state["inputHeight"], app_state["inputWidth"]),
+                    )
                     resized_crop.append((crop_img, crop_ann))
                 img_dict[original_name].append(resized_crop)
             else:
@@ -60,7 +67,9 @@ def unpack_crops(crops, original_names):
                 anns.append(ann)
                 for label in ann.labels:
                     name_idx += 1
-                    img_names.append(f"{get_file_name(original_name)}_{label.obj_class.name}_{name_idx}_{label.obj_class.sly_id}.png")
+                    img_names.append(
+                        f"{get_file_name(original_name)}_{label.obj_class.name}_{name_idx}_{label.obj_class.sly_id}.png"
+                    )
 
     return img_nps, anns, img_names
 
@@ -77,7 +86,9 @@ def get_selected_classes_from_ui(selected_classes):
 @sly.timeit
 def upload_preview(crops):
     if len(crops) == 0:
-        g.api.task.set_fields(g.TASK_ID, [{"field": "data.showEmptyMessage", "payload": True}])
+        g.api.task.set_fields(
+            g.TASK_ID, [{"field": "data.showEmptyMessage", "payload": True}]
+        )
         return
 
     upload_src_paths = []
@@ -93,16 +104,31 @@ def upload_preview(crops):
         upload_dst_paths.append(remote_path)
 
     g.api.file.remove(g.TEAM_ID, "/temp/{}/".format(g.TASK_ID))
+
     def _progress_callback(monitor):
-        if hasattr(monitor, 'last_percent') is False:
+        if hasattr(monitor, "last_percent") is False:
             monitor.last_percent = 0
         cur_percent = int(monitor.bytes_read * 100.0 / monitor.len)
         if cur_percent - monitor.last_percent > 15 or cur_percent == 100:
-            g.api.task.set_fields(g.TASK_ID, [{"field": "data.previewProgress", "payload": cur_percent}])
+            g.api.task.set_fields(
+                g.TASK_ID, [{"field": "data.previewProgress", "payload": cur_percent}]
+            )
             monitor.last_percent = cur_percent
 
-    upload_results = g.api.file.upload_bulk(g.TEAM_ID, upload_src_paths, upload_dst_paths, _progress_callback)
-    #clean local data
+    upload_results = g.api.file.upload_bulk(
+        g.TEAM_ID, upload_src_paths, upload_dst_paths, _progress_callback
+    )
+    # clean local data
     for local_path in upload_src_paths:
         sly.fs.silent_remove(local_path)
     return upload_results
+
+
+def copy_tags(crop_anns):
+    new_anns = []
+    for ann in crop_anns:
+        for label in ann.labels:
+            tags = label.tags
+            new_ann = ann.add_tags(tags)
+            new_anns.append(new_ann)
+    return new_anns
