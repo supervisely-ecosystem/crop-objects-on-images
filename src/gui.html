@@ -59,6 +59,14 @@
                     </sly-field>
                 </div>
 
+                <div class="fflex align-start">
+                    <el-checkbox v-model="state.copyTags" :disabled="data.finished === true"
+                                 class="mt10 mr10"></el-checkbox>
+                    <sly-field class="mt20" title="Copy tags to crop"
+                               description="if object has tags they will be copied to cropped image">
+                    </sly-field>
+                </div>
+
                 <sly-field title="Padding for objects crop"
                            description="Padding is measured in percent of corresponding side
                                         (width of height of bounding box)">
@@ -90,14 +98,6 @@
                         </el-checkbox>
                     </div>
                 </sly-field>
-
-                <div class="fflex align-start">
-                    <el-checkbox v-model="state.copyTags" :disabled="data.finished === true"
-                                 class="mt10 mr10"></el-checkbox>
-                    <sly-field class="mt20" title="Copy tags to crop"
-                               description="if object has tags they will be copied to cropped image">
-                    </sly-field>
-                </div>
 
                 <div style="border-bottom: 1px solid #e3e6ec; margin: 10px 0"></div>
 

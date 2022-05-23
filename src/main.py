@@ -72,7 +72,7 @@ def crop_all_objects(api: sly.Api, task_id, context, state, app_logger):
         type=sly.ProjectType.IMAGES,
         change_name_if_conflict=True,
     )
-    if state["keepAnns"]:
+    if state["keepAnns"] or state["copyTags"]:
         api.project.update_meta(dst_project.id, g.project_meta.to_json())
 
     progress = sly.Progress("Cropping objects on images", g.total_images_count)
@@ -99,9 +99,10 @@ def crop_all_objects(api: sly.Api, task_id, context, state, app_logger):
 
             dst_image_infos = api.image.upload_nps(dst_dataset.id, crop_names, crop_nps)
             dst_image_ids = [dst_image_info.id for dst_image_info in dst_image_infos]
-            if state["keepAnns"]:
-                if state["copyTags"]:
-                    crop_anns = f.copy_tags(crop_anns)
+            if state["keepAnns"] and state["copyTags"] is False:
+                api.annotation.upload_anns(dst_image_ids, crop_anns)
+            if state["copyTags"]:
+                crop_anns = f.copy_tags(crop_anns, state["keepAnns"])
                 api.annotation.upload_anns(dst_image_ids, crop_anns)
             progress.iters_done_report(len(batch))
             current_progress += len(batch)
@@ -111,7 +112,7 @@ def crop_all_objects(api: sly.Api, task_id, context, state, app_logger):
                 int(current_progress * 100 / g.total_images_count),
             )
 
-            # print(f'{psutil.virtual_memory().percent=}')
+                    # print(f'{psutil.virtual_memory().percent=}')
 
     res_project = api.project.get_info_by_id(dst_project.id)
     fields = [

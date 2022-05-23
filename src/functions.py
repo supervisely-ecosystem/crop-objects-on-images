@@ -124,11 +124,14 @@ def upload_preview(crops):
     return upload_results
 
 
-def copy_tags(crop_anns):
+def copy_tags(crop_anns, save_anns):
     new_anns = []
     for ann in crop_anns:
         for label in ann.labels:
-            tags = label.tags
-            new_ann = ann.add_tags(tags)
+            label_tags = label.tags
+            if save_anns:
+                new_ann = ann.add_tags(label_tags)
+            else:
+                new_ann = ann.clone(img_size=ann.img_size, labels=[], img_tags=label_tags)
             new_anns.append(new_ann)
     return new_anns
