@@ -146,6 +146,7 @@ def validate_tags(project_meta):
             new_tag_meta = tag_meta.clone(applicable_to=sly.TagApplicableTo.ALL)
             project_meta = project_meta.delete_tag_meta(tag_meta.name)
             project_meta = project_meta.add_tag_meta(new_tag_meta)
-            need_update = True
+            if need_update is False:
+                need_update = True
 
     return project_meta, need_update
