@@ -7,6 +7,7 @@ import globals as g
 import init_ui
 
 
+
 @g.my_app.callback("preview")
 @sly.timeit
 def preview(api: sly.Api, task_id, context, state, app_logger):
@@ -102,6 +103,9 @@ def crop_all_objects(api: sly.Api, task_id, context, state, app_logger):
             if state["keepAnns"] and state["copyTags"] is False:
                 api.annotation.upload_anns(dst_image_ids, crop_anns)
             if state["copyTags"]:
+                g.project_meta, need_update = f.validate_tags(g.project_meta)
+                if need_update:
+                    api.project.update_meta(dst_project.id, g.project_meta.to_json())
                 crop_anns = f.copy_tags(crop_anns, state["keepAnns"])
                 api.annotation.upload_anns(dst_image_ids, crop_anns)
             progress.iters_done_report(len(batch))
@@ -112,7 +116,7 @@ def crop_all_objects(api: sly.Api, task_id, context, state, app_logger):
                 int(current_progress * 100 / g.total_images_count),
             )
 
-                    # print(f'{psutil.virtual_memory().percent=}')
+            # print(f'{psutil.virtual_memory().percent=}')
 
     res_project = api.project.get_info_by_id(dst_project.id)
     fields = [

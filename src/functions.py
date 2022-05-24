@@ -132,6 +132,21 @@ def copy_tags(crop_anns, save_anns):
             if save_anns:
                 new_ann = ann.add_tags(label_tags)
             else:
-                new_ann = ann.clone(img_size=ann.img_size, labels=[], img_tags=label_tags)
+                new_ann = ann.clone(
+                    img_size=ann.img_size, labels=[], img_tags=label_tags
+                )
             new_anns.append(new_ann)
     return new_anns
+
+
+def validate_tags(project_meta):
+    need_update = False
+    for tag_meta in project_meta.tag_metas:
+        if tag_meta.applicable_to == sly.TagApplicableTo.OBJECTS_ONLY:
+            new_tag_meta = tag_meta.clone(applicable_to=sly.TagApplicableTo.ALL)
+            project_meta = project_meta.delete_tag_meta(tag_meta.name)
+            project_meta = project_meta.add_tag_meta(new_tag_meta)
+            if need_update is False:
+                need_update = True
+
+    return project_meta, need_update
