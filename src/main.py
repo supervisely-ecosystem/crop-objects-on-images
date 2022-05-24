@@ -7,6 +7,7 @@ import globals as g
 import init_ui
 
 
+
 @g.my_app.callback("preview")
 @sly.timeit
 def preview(api: sly.Api, task_id, context, state, app_logger):

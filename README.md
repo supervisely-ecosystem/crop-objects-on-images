@@ -22,7 +22,7 @@
 
 ## Overview
 
-The app crops objects of selected classes in images project and creates a new project. User can define some crop settings - for example, padding, resize and what to do with original labels - keep or ignore. 
+The app crops objects of selected classes in images project and creates a new project. User can define some crop settings - for example, padding, resize, copy object tags to crop images, and what to do with original labels - keep or ignore. 
 
 # How To Run 
 
@@ -48,5 +48,5 @@ The app crops objects of selected classes in images project and creates a new pr
 4. App shuts down automatically
 
 <div align="center" markdown>
-<img src="https://i.imgur.com/r2E6LTe.png"/>
+<img src="https://i.imgur.com/AMbQSBB.png"/>
 </div>
