@@ -50,3 +50,20 @@ The app crops objects of selected classes in images project and creates a new pr
 <div align="center" markdown>
 <img src="https://i.imgur.com/AMbQSBB.png"/>
 </div>
+
+if checkbox `copy tags to crop` is selected, that every cropped image will have tags that was on corresponding objects:
+
+<div>
+  <table>
+    <tr style="width: 100%">
+      <td>
+        <b>Full image</b>
+        <img src="https://i.imgur.com/1fqd0OZ.png" style="width:150%;"/>
+      </td>
+      <td>
+        <b>Object crop</b>
+        <img src="https://i.imgur.com/sFJWuAp.png" style="width:150%;"/>
+      </td>
+    </tr>
+  </table>
+</div>
