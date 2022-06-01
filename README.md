@@ -58,11 +58,11 @@ if checkbox `copy tags to crop` is selected, that every cropped image will have 
     <tr style="width: 100%">
       <td>
         <b>Full image</b>
-        <img src="https://i.imgur.com/1fqd0OZ.png" style="width:150%;"/>
+        <img src="https://github.com/supervisely-ecosystem/crop-objects-on-images/releases/download/v0.0.1/full_image.png" style="width:150%;"/>
       </td>
       <td>
         <b>Object crop</b>
-        <img src="https://i.imgur.com/sFJWuAp.png" style="width:150%;"/>
+        <img src="https://github.com/supervisely-ecosystem/crop-objects-on-images/releases/download/v0.0.1/object_crop.png" style="width:150%;"/>
       </td>
     </tr>
   </table>
