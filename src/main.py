@@ -38,13 +38,13 @@ def preview(api: sly.Api, task_id, context, state, app_logger):
 
         if idx == 0:
             grid_data[idx] = {
-                "url": info.full_storage_url,
+                "url": info.storage_path,
                 "title": f"Original image ({image_name})",
                 "figures": [label.to_json() for label in single_crop[idx][1].labels],
             }
         else:
             grid_data[idx] = {
-                "url": info.full_storage_url,
+                "url": info.storage_path,
                 "title": f"Object_{idx}",
                 "figures": [label.to_json() for label in single_crop[idx][1].labels],
             }
