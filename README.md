@@ -1,5 +1,5 @@
 <div align="center" markdown>
-<img src="https://i.imgur.com/TslAtO8.png"/>
+<img src="https://user-images.githubusercontent.com/48245050/182571801-4c863696-e76f-4e2e-81ec-de6794c257a3.png"/>
 
 # Crop objects on images
 
