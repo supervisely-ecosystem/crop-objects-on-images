@@ -27,16 +27,16 @@ The app crops objects of selected classes in images project and creates a new pr
 
 1. Add [Crop objects on images](https://ecosystem.supervise.ly/apps/crop-objects-on-image) to your team from Ecosystem.
 
-<img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/crop-objects-on-image" src="https://i.imgur.com/wZiMUWn.png" width="450px" style='padding-bottom: 20px'/>  
+<img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/crop-objects-on-image" src="media/ht1.png" width="450px" style='padding-bottom: 20px'/>  
 
 2. Run app from the context menu of **Images Project**:
 
-<img src="https://i.imgur.com/cgaP76g.png" width="100%"/>
+<img src="media/ht2.png" width="100%"/>
 
 3. Once app is started, it will appear in workspace tasks, to open the app click `Open` button
  
 <div align="center" markdown>
-<img src="https://i.imgur.com/8DemHS7.png"/>
+<img src="media/ht3.png"/>
 </div>
 
 # How To Use
@@ -47,7 +47,7 @@ The app crops objects of selected classes in images project and creates a new pr
 4. App shuts down automatically
 
 <div align="center" markdown>
-<img src="https://i.imgur.com/AMbQSBB.png"/>
+<img src="media/use.png"/>
 </div>
 
 if checkbox `copy tags to crop` is selected, that every cropped image will have tags that was on corresponding objects:
