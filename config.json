@@ -1,25 +1,25 @@
 {
-  "name": "Crop objects on images",
-  "type": "app",
-  "categories": [
-    "images",
-    "data transformation",
-    "annotation transformation",
-    "data operations"
-  ],
-  "description": "Creates new project with cropped objects",
-  "docker_image": "supervisely/base-py-sdk:6.72.55",
-  "instance_version": "6.4.57",
-  "main_script": "src/main.py",
-  "gui_template": "src/gui.html",
-  "task_location": "workspace_tasks",
-  "icon": "https://img.icons8.com/color/100/000000/crop--v1.png",
-  "icon_background": "#FFFFFF",
-  "context_menu": {
-    "target": [
-      "images_project"
+    "name": "Crop objects on images",
+    "type": "app",
+    "categories": [
+        "images",
+        "data transformation",
+        "annotation transformation",
+        "data operations"
     ],
-    "context_category": "Transform"
-  },
-  "poster": "https://user-images.githubusercontent.com/48245050/182571801-4c863696-e76f-4e2e-81ec-de6794c257a3.png"
+    "description": "Creates new project with cropped objects",
+    "docker_image": "supervisely/data-operations:0.0.3",
+    "instance_version": "6.4.57",
+    "main_script": "src/main.py",
+    "gui_template": "src/gui.html",
+    "task_location": "workspace_tasks",
+    "icon": "https://img.icons8.com/color/100/000000/crop--v1.png",
+    "icon_background": "#FFFFFF",
+    "context_menu": {
+        "target": [
+            "images_project"
+        ],
+        "context_category": "Transform"
+    },
+    "poster": "https://user-images.githubusercontent.com/48245050/182571801-4c863696-e76f-4e2e-81ec-de6794c257a3.png"
 }
