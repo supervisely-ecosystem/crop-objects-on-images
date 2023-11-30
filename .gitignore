@@ -1,3 +1,4 @@
 .idea
 secret_debug.env
 venv
+.venv
