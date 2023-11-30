@@ -1,4 +1,5 @@
 import random
+import time
 
 import supervisely as sly
 
@@ -62,6 +63,21 @@ def preview(api: sly.Api, task_id, context, state, app_logger):
 
     # print(f'{psutil.virtual_memory().percent=}')
 
+def download_images_with_retry(api, dataset_id, image_ids):
+    retry_cnt = 5
+    curr_retry = 0
+    while curr_retry <= retry_cnt:
+        try:
+            image_nps = api.image.download_nps(dataset_id, image_ids)
+            if len(image_nps) != len(image_ids):
+                raise RuntimeError(f"Downloaded {len(image_nps)} images, but {len(image_ids)} expected.")
+            return image_nps
+        except Exception as e:
+            curr_retry += 1
+            if curr_retry <= retry_cnt:
+                time.sleep(1)
+                sly.logger.warn(f"Failed to download images, retry {curr_retry} of {retry_cnt}... Error: {e}")
+    raise RuntimeError(f"Failed to download images with ids {image_ids}. Check your data and try again. Error: {e}")
 
 @g.my_app.callback("crop_all_objects")
 @sly.timeit
@@ -87,7 +103,7 @@ def crop_all_objects(api: sly.Api, task_id, context, state, app_logger):
             image_names = [image_info.name for image_info in batch]
             ann_infos = api.annotation.download_batch(dataset.id, image_ids)
 
-            image_nps = api.image.download_nps(dataset.id, image_ids)
+            image_nps = download_images_with_retry(api, dataset.id, image_ids)
             anns = [
                 sly.Annotation.from_json(ann_info.annotation, g.project_meta)
                 for ann_info in ann_infos
