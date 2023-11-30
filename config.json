@@ -8,8 +8,8 @@
         "data operations"
     ],
     "description": "Creates new project with cropped objects",
-    "docker_image": "supervisely/data-operations:6.72.122",
-    "instance_version": "6.4.57",
+    "docker_image": "supervisely/data-operations:6.72.201",
+    "instance_version": "6.8.48",
     "main_script": "src/main.py",
     "gui_template": "src/gui.html",
     "task_location": "workspace_tasks",
