@@ -77,7 +77,7 @@ def download_images_with_retry(api, dataset_id, image_ids):
             if curr_retry <= retry_cnt:
                 time.sleep(1)
                 sly.logger.warn(f"Failed to download images, retry {curr_retry} of {retry_cnt}... Error: {e}")
-    raise RuntimeError(f"Failed to download images with ids {image_ids}. Check your data and try again. Error: {e}")
+    raise RuntimeError(f"Failed to download images with ids {image_ids}. Check your data and try again later.")
 
 @g.my_app.callback("crop_all_objects")
 @sly.timeit
