@@ -1,0 +1,17 @@
+<div>
+  <div style="display: none">
+    <sly-select-class
+      :project-id="context.projectId"
+      :classes.sync="state.classes"
+    >
+    </sly-select-class>
+  </div>
+  <div
+    style="margin: 10px 0 0 0"
+    v-if="context.projectId | state.classes | state.classes.length == 0"
+  >
+    <span style="color: #8f2e21"> There are no classes in the project. </span>
+    <br />
+    <span> At least one class is required to crop objects. </span>
+  </div>
+</div>
