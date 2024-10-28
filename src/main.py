@@ -12,6 +12,9 @@ import init_ui
 @g.my_app.callback("preview")
 @sly.timeit
 def preview(api: sly.Api, task_id, context, state, app_logger):
+    if g.preview_in_progress:
+        return
+    g.preview_in_progress = True
     api.task.set_fields(task_id, [{"field": "data.previewProgress", "payload": 0}])
 
     image_id = random.choice(g.image_ids)
@@ -60,6 +63,7 @@ def preview(api: sly.Api, task_id, context, state, app_logger):
         api.task.set_fields(
             task_id, [{"field": "data.preview.content", "payload": content}]
         )
+    g.preview_in_progress = False
 
     # print(f'{psutil.virtual_memory().percent=}')
 
