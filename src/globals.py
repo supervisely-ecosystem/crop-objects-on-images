@@ -28,6 +28,7 @@ project_info = api.project.get_info_by_id(PROJECT_ID)
 project_meta_json = api.project.get_meta(project_info.id)
 project_meta = sly.ProjectMeta.from_json(project_meta_json)
 
+preview_in_progress = False
 
 CNT_GRID_COLUMNS = 3
 
