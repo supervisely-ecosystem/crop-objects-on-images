@@ -11,11 +11,11 @@
 </p>
 
 
-[![](https://img.shields.io/badge/supervisely-ecosystem-brightgreen)](https://ecosystem.supervise.ly/apps/crop-objects-on-images)
-[![](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://supervise.ly/slack)
+[![](https://img.shields.io/badge/supervisely-ecosystem-brightgreen)](https://ecosystem.supervisely.com/apps/crop-objects-on-images)
+[![](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://supervisely.com/slack)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/supervisely-ecosystem/crop-objects-on-images)
-[![views](https://app.supervise.ly/img/badges/views/supervisely-ecosystem/crop-objects-on-images.png)](https://supervise.ly)
-[![runs](https://app.supervise.ly/img/badges/runs/supervisely-ecosystem/crop-objects-on-images.png)](https://supervise.ly)
+[![views](https://app.supervisely.com/img/badges/views/supervisely-ecosystem/crop-objects-on-images.png)](https://supervisely.com)
+[![runs](https://app.supervisely.com/img/badges/runs/supervisely-ecosystem/crop-objects-on-images.png)](https://supervisely.com)
 
 </div>
 
@@ -25,7 +25,7 @@ The app crops objects of selected classes in images project and creates a new pr
 
 # How To Run 
 
-1. Add [Crop objects on images](https://ecosystem.supervise.ly/apps/crop-objects-on-image) to your team from Ecosystem.
+1. Add [Crop objects on images](https://ecosystem.supervisely.com/apps/crop-objects-on-image) to your team from Ecosystem.
 
 <img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/crop-objects-on-image" src="https://i.imgur.com/wZiMUWn.png" width="450px" style='padding-bottom: 20px'/>  
 
