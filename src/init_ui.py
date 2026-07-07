@@ -61,6 +61,7 @@ def init(data, state):
 
     state["cropPadding"] = 0
     state["keepAnns"] = True
+    state["includeOverlapping"] = False
     state["copyTags"] = True
     state["classesSelected"] = classes_selected
     state["classesDisabled"] = classes_disabled

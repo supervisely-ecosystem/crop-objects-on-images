@@ -20,14 +20,37 @@ def unpack_single_crop(crop, image_name):
     return flat_crops
 
 
+def crop_objects_on_image(img_np, ann, class_name, include_overlapping, padding_percent):
+    results = []
+    img_rect = sly.Rectangle.from_size(img_np.shape[:2])
+    for label in ann.labels:
+        if label.obj_class.name != class_name:
+            continue
+        bbox = label.geometry.to_bbox()
+        pad_h = int(bbox.height * padding_percent / 100)
+        pad_w = int(bbox.width * padding_percent / 100)
+        # bottom/right extended by 1 extra px to keep crop sizes identical to
+        # sly.aug.instance_crop used before
+        rect = sly.Rectangle(
+            bbox.top - pad_h,
+            bbox.left - pad_w,
+            bbox.bottom + pad_h + 1,
+            bbox.right + pad_w + 1,
+        )
+        crops = rect.crop(img_rect)
+        if len(crops) == 0:
+            continue
+        rect = crops[0]
+        image_crop = sly.image.crop(img_np, rect)
+        labels_to_keep = ann.labels if include_overlapping else [label]
+        cropped_ann = ann.clone(labels=labels_to_keep).relative_crop(rect)
+        results.append((image_crop, cropped_ann, label))
+    return results
+
+
 def crop_and_resize_objects(img_nps, anns, app_state, selected_classes, original_names):
     crops = []
-    crop_padding = {
-        "top": "{}%".format(app_state["cropPadding"]),
-        "left": "{}%".format(app_state["cropPadding"]),
-        "right": "{}%".format(app_state["cropPadding"]),
-        "bottom": "{}%".format(app_state["cropPadding"]),
-    }
+    include_overlapping = app_state["keepAnns"] and app_state["includeOverlapping"]
     for img_np, ann, original_name in zip(img_nps, anns, original_names):
         img_dict = {original_name: []}
         if len(ann.labels) == 0:
@@ -35,18 +58,18 @@ def crop_and_resize_objects(img_nps, anns, app_state, selected_classes, original
             continue
 
         for class_name in selected_classes:
-            objects_crop = sly.aug.instance_crop(
-                img_np, ann, class_name, False, crop_padding
+            objects_crop = crop_objects_on_image(
+                img_np, ann, class_name, include_overlapping, app_state["cropPadding"]
             )
             if app_state["autoSize"] is False:
                 resized_crop = []
-                for crop_img, crop_ann in objects_crop:
+                for crop_img, crop_ann, target_label in objects_crop:
                     crop_img, crop_ann = resize_crop(
                         crop_img,
                         crop_ann,
                         (app_state["inputHeight"], app_state["inputWidth"]),
                     )
-                    resized_crop.append((crop_img, crop_ann))
+                    resized_crop.append((crop_img, crop_ann, target_label))
                 img_dict[original_name].append(resized_crop)
             else:
                 img_dict[original_name].append(objects_crop)
@@ -59,19 +82,20 @@ def unpack_crops(crops, original_names):
     img_nps = []
     anns = []
     img_names = []
+    target_labels = []
     name_idx = 0
     for crop, original_name in zip(crops, original_names):
         for label_crop in crop[original_name]:
-            for img_np, ann in label_crop:
+            for img_np, ann, target_label in label_crop:
                 img_nps.append(img_np)
                 anns.append(ann)
-                for label in ann.labels:
-                    name_idx += 1
-                    img_names.append(
-                        f"{get_file_name(original_name)}_{label.obj_class.name}_{name_idx}_{label.obj_class.sly_id}.png"
-                    )
+                target_labels.append(target_label)
+                name_idx += 1
+                img_names.append(
+                    f"{get_file_name(original_name)}_{target_label.obj_class.name}_{name_idx}_{target_label.obj_class.sly_id}.png"
+                )
 
-    return img_nps, anns, img_names
+    return img_nps, anns, img_names, target_labels
 
 
 def get_selected_classes_from_ui(selected_classes):
@@ -124,18 +148,15 @@ def upload_preview(crops):
     return upload_results
 
 
-def copy_tags(crop_anns, save_anns):
+def copy_tags(crop_anns, target_labels, save_anns):
     new_anns = []
-    for ann in crop_anns:
-        for label in ann.labels:
-            label_tags = label.tags
-            if save_anns:
-                new_ann = ann.add_tags(label_tags)
-            else:
-                new_ann = ann.clone(
-                    img_size=ann.img_size, labels=[], img_tags=label_tags
-                )
-            new_anns.append(new_ann)
+    for ann, target_label in zip(crop_anns, target_labels):
+        label_tags = target_label.tags
+        if save_anns:
+            new_ann = ann.add_tags(label_tags)
+        else:
+            new_ann = ann.clone(img_size=ann.img_size, labels=[], img_tags=label_tags)
+        new_anns.append(new_ann)
     return new_anns
 
 

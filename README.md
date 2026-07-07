@@ -41,7 +41,7 @@ The app crops objects of selected classes in images project and creates a new pr
 
 # How To Use
 
-1. Define settings
+1. Define settings. Enable `Include overlapping annotations` to also keep annotations of all other objects (any class) that overlap the crop area — partially visible objects are clipped to the crop borders (requires `Save annotations`).
 2. Press “Preview” button to see results on random image
 3. Press “Crop all objects” button to create a new project with cropped objects
 4. App shuts down automatically
