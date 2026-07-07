@@ -55,7 +55,16 @@
                     <el-checkbox v-model="state.keepAnns" :disabled="data.finished === true"
                                  class="mt10 mr10"></el-checkbox>
                     <sly-field class="mt20" title="Save annotations"
-                               description="Transfer annotations from source project to resulting project">
+                               description="Add the annotation of the cropped object itself to the resulting image">
+                    </sly-field>
+                </div>
+
+                <div class="fflex align-start">
+                    <el-checkbox v-model="state.includeOverlapping"
+                                 :disabled="data.finished === true || !state.keepAnns"
+                                 class="mt10 mr10"></el-checkbox>
+                    <sly-field class="mt20" title="Include overlapping annotations"
+                               description='Besides the cropped object, also keep annotations of all other objects (any class) that overlap the crop area. Partially visible objects are clipped to the crop borders. Requires "Save annotations"'>
                     </sly-field>
                 </div>
 

@@ -30,7 +30,9 @@ def preview(api: sly.Api, task_id, context, state, app_logger):
         [img], [ann], state, selected_classes, [image_name]
     )
     single_crop = f.unpack_single_crop(single_crop, image_name)
-    single_crop = [(img, ann)] + single_crop
+    single_crop = [(img, ann)] + [
+        (crop_img, crop_ann) for crop_img, crop_ann, _ in single_crop
+    ]
 
     grid_data = {}
     grid_layout = [[] for _ in range(g.CNT_GRID_COLUMNS)]
@@ -116,7 +118,9 @@ def crop_all_objects(api: sly.Api, task_id, context, state, app_logger):
             crops = f.crop_and_resize_objects(
                 image_nps, anns, state, selected_classes, image_names
             )
-            crop_nps, crop_anns, crop_names = f.unpack_crops(crops, image_names)
+            crop_nps, crop_anns, crop_names, target_labels = f.unpack_crops(
+                crops, image_names
+            )
 
             dst_image_infos = api.image.upload_nps(dst_dataset.id, crop_names, crop_nps)
             dst_image_ids = [dst_image_info.id for dst_image_info in dst_image_infos]
@@ -126,7 +130,7 @@ def crop_all_objects(api: sly.Api, task_id, context, state, app_logger):
                 g.project_meta, need_update = f.validate_tags(g.project_meta)
                 if need_update:
                     api.project.update_meta(dst_project.id, g.project_meta.to_json())
-                crop_anns = f.copy_tags(crop_anns, state["keepAnns"])
+                crop_anns = f.copy_tags(crop_anns, target_labels, state["keepAnns"])
                 api.annotation.upload_anns(dst_image_ids, crop_anns)
             progress.iters_done_report(len(batch))
             current_progress += len(batch)
